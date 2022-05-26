@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace eticaret.Controllers
         [HttpGet]
         public IEnumerable<Category> Get()
         {
-            return _context.Categories.ToList();
+            return _context.Categories.Include(c => c.Products).ToList();
         }
 
         // GET api/<CategoryController>/5
@@ -46,8 +47,23 @@ namespace eticaret.Controllers
         {
             cat.Id = id;
             _context.Attach(cat);
-            _context.Entry(cat).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            _context.SaveChanges();               
+            _context.Entry(cat).State = EntityState.Modified;
+            foreach (var product in cat.Products)
+            {
+                if (product.Id > 0)
+                {
+                    _context.Attach(product);
+                    _context.Entry(product).State = EntityState.Modified;
+                }
+                else
+                {
+                    product.CategoryId = cat.Id;
+                    _context.Products.Add(product);
+                }
+            }
+
+            _context.SaveChanges();
+
         }
 
         // DELETE api/<CategoryController>/5
@@ -56,6 +72,14 @@ namespace eticaret.Controllers
         {
             var silinecek = _context.Categories.FirstOrDefault(c => c.Id == id);
             _context.Remove(silinecek);
+            _context.SaveChanges();
+        }
+
+        [HttpDelete("product/{id}")]
+        public void DeleteProduct(int id)
+        {
+            var deleted = _context.Products.First(c => c.Id == id);
+            _context.Remove(deleted);
             _context.SaveChanges();
         }
     }

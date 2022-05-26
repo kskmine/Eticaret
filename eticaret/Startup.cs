@@ -26,7 +26,7 @@ namespace eticaret
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<CategoryDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("TuEticaret")));
+            services.AddDbContext<CategoryDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Eticaret")));
             services.AddControllers().AddNewtonsoftJson();
             services.AddSwaggerGen(c =>
             {
